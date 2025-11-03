@@ -52,6 +52,10 @@ export class ExchangeStatusService {
       { name: 'bybit', checker: () => this.checkBybitStatus() },
       { name: 'okx', checker: () => this.checkOKXStatus() },
       { name: 'gateio', checker: () => this.checkGateioStatus() },
+      { name: 'kucoin', checker: () => this.checkKucoinStatus() },
+      { name: 'htx', checker: () => this.checkHTXStatus() },
+      { name: 'mexc', checker: () => this.checkMEXCStatus() },
+      { name: 'bitget', checker: () => this.checkBitgetStatus() },
     ];
 
     const results = await Promise.allSettled(
@@ -245,6 +249,158 @@ export class ExchangeStatusService {
   getSuspendedTokens(exchange: string): string[] {
     const suspended = this.suspendedTokens.get(exchange.toLowerCase());
     return suspended ? Array.from(suspended) : [];
+  }
+
+  /**
+   * Check KuCoin for suspended tokens
+   */
+  private async checkKucoinStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:kucoin';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://api.kucoin.com/api/v1/currencies', {
+        timeout: 10000,
+      });
+
+      if (response.data?.data) {
+        for (const coin of response.data.data) {
+          const symbol = coin.currency?.toUpperCase();
+          if (!symbol) continue;
+
+          // Check if withdrawal or deposit is disabled
+          if (coin.isWithdrawEnabled === false || coin.isDepositEnabled === false) {
+            suspended.add(symbol);
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('KuCoin status check failed');
+    }
+
+    return suspended;
+  }
+
+  /**
+   * Check HTX (Huobi) for suspended tokens
+   */
+  private async checkHTXStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:htx';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://api.huobi.pro/v2/reference/currencies', {
+        timeout: 10000,
+      });
+
+      if (response.data?.data) {
+        for (const coin of response.data.data) {
+          const symbol = coin.currency?.toUpperCase();
+          if (!symbol) continue;
+
+          // Check chains
+          const hasActiveChain = coin.chains?.some((chain: any) =>
+            chain.depositStatus === 'allowed' && chain.withdrawStatus === 'allowed'
+          );
+
+          if (!hasActiveChain) {
+            suspended.add(symbol);
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('HTX status check failed');
+    }
+
+    return suspended;
+  }
+
+  /**
+   * Check MEXC for suspended tokens
+   */
+  private async checkMEXCStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:mexc';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://api.mexc.com/api/v3/capital/config/getall', {
+        timeout: 10000,
+      });
+
+      if (Array.isArray(response.data)) {
+        for (const coin of response.data) {
+          const symbol = coin.coin?.toUpperCase();
+          if (!symbol) continue;
+
+          // Check network list
+          const hasActiveNetwork = coin.networkList?.some((network: any) =>
+            network.withdrawEnable && network.depositEnable
+          );
+
+          if (!hasActiveNetwork) {
+            suspended.add(symbol);
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('MEXC status check failed');
+    }
+
+    return suspended;
+  }
+
+  /**
+   * Check Bitget for suspended tokens
+   */
+  private async checkBitgetStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:bitget';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://api.bitget.com/api/spot/v1/public/currencies', {
+        timeout: 10000,
+      });
+
+      if (response.data?.data) {
+        for (const coin of response.data.data) {
+          const symbol = coin.coinName?.toUpperCase();
+          if (!symbol) continue;
+
+          // Check if chains exist and are active
+          const hasActiveChain = coin.chains?.some((chain: any) =>
+            chain.withdrawable === '1' && chain.rechargeable === '1'
+          );
+
+          if (!hasActiveChain) {
+            suspended.add(symbol);
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('Bitget status check failed');
+    }
+
+    return suspended;
   }
 
   /**
