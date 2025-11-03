@@ -56,6 +56,9 @@ export class ExchangeStatusService {
       { name: 'htx', checker: () => this.checkHTXStatus() },
       { name: 'mexc', checker: () => this.checkMEXCStatus() },
       { name: 'bitget', checker: () => this.checkBitgetStatus() },
+      { name: 'kraken', checker: () => this.checkKrakenStatus() },
+      { name: 'poloniex', checker: () => this.checkPoloniexStatus() },
+      { name: 'bingx', checker: () => this.checkBingXStatus() },
     ];
 
     const results = await Promise.allSettled(
@@ -398,6 +401,119 @@ export class ExchangeStatusService {
       globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
     } catch (error) {
       Logger.debug('Bitget status check failed');
+    }
+
+    return suspended;
+  }
+
+  /**
+   * Check Kraken for suspended tokens
+   */
+  private async checkKrakenStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:kraken';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://api.kraken.com/0/public/Assets', {
+        timeout: 10000,
+      });
+
+      if (response.data?.result) {
+        for (const [key, asset] of Object.entries(response.data.result)) {
+          const assetData = asset as any;
+          const symbol = assetData.altname?.toUpperCase();
+          if (!symbol) continue;
+
+          // Check deposit and withdrawal status
+          if (assetData.status === 'disabled' ||
+              assetData.deposit_enabled === false ||
+              assetData.withdrawal_enabled === false) {
+            suspended.add(symbol);
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('Kraken status check failed');
+    }
+
+    return suspended;
+  }
+
+  /**
+   * Check Poloniex for suspended tokens
+   */
+  private async checkPoloniexStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:poloniex';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://api.poloniex.com/currencies', {
+        timeout: 10000,
+      });
+
+      if (response.data) {
+        for (const [symbol, info] of Object.entries(response.data)) {
+          const coinInfo = info as any;
+
+          // Check if deposit or withdrawal is disabled
+          if (coinInfo.disabled === 1 ||
+              coinInfo.frozen === 1 ||
+              coinInfo.delisted === 1) {
+            suspended.add(symbol.toUpperCase());
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('Poloniex status check failed');
+    }
+
+    return suspended;
+  }
+
+  /**
+   * Check BingX for suspended tokens
+   */
+  private async checkBingXStatus(): Promise<Set<string>> {
+    const cacheKey = 'exchange_status:bingx';
+    const cached = globalCache.get<Set<string>>(cacheKey);
+    if (cached) return cached;
+
+    const suspended = new Set<string>();
+
+    try {
+      const response = await axios.get('https://open-api.bingx.com/openApi/wallets/v1/capital/config/getall', {
+        timeout: 10000,
+      });
+
+      if (response.data?.data) {
+        for (const coin of response.data.data) {
+          const symbol = coin.coin?.toUpperCase();
+          if (!symbol) continue;
+
+          // Check network list
+          const hasActiveNetwork = coin.networkList?.some((network: any) =>
+            network.withdrawEnable === true && network.depositEnable === true
+          );
+
+          if (!hasActiveNetwork) {
+            suspended.add(symbol);
+          }
+        }
+      }
+
+      globalCache.set(cacheKey, suspended, CACHE_TTL.exchangeInfo);
+    } catch (error) {
+      Logger.debug('BingX status check failed');
     }
 
     return suspended;
