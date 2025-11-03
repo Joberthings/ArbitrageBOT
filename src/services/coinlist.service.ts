@@ -34,28 +34,49 @@ export class CoinListService {
       const pages = Math.ceil(this.TOP_N_COINS / perPage);
 
       for (let page = 1; page <= pages; page++) {
-        const response = await axios.get(`${this.COINGECKO_API}/coins/markets`, {
-          params: {
-            vs_currency: 'usd',
-            order: 'market_cap_desc',
-            per_page: perPage,
-            page,
-            sparkline: false,
-          },
-        });
+        let retries = 3;
+        let success = false;
 
-        const pageCoins: Coin[] = response.data.map((coin: any, index: number) => ({
-          symbol: coin.symbol.toUpperCase(),
-          name: coin.name,
-          marketCap: coin.market_cap,
-          rank: (page - 1) * perPage + index + 1,
-        }));
+        while (retries > 0 && !success) {
+          try {
+            const response = await axios.get(`${this.COINGECKO_API}/coins/markets`, {
+              params: {
+                vs_currency: 'usd',
+                order: 'market_cap_desc',
+                per_page: perPage,
+                page,
+                sparkline: false,
+              },
+              timeout: 10000,
+            });
 
-        coins.push(...pageCoins);
+            const pageCoins: Coin[] = response.data.map((coin: any, index: number) => ({
+              symbol: coin.symbol.toUpperCase(),
+              name: coin.name,
+              marketCap: coin.market_cap,
+              rank: (page - 1) * perPage + index + 1,
+            }));
 
-        // Rate limiting: wait 1.5 seconds between requests (40 calls/min limit)
-        if (page < pages) {
-          await this.sleep(1500);
+            coins.push(...pageCoins);
+            success = true;
+
+            // Rate limiting: wait 2 seconds between requests
+            if (page < pages) {
+              await this.sleep(2000);
+            }
+          } catch (err: any) {
+            retries--;
+            if (err.response?.status === 429) {
+              const waitTime = 60000; // Wait 1 minute on rate limit
+              Logger.warn(`Rate limited. Waiting ${waitTime / 1000}s before retry...`);
+              await this.sleep(waitTime);
+            } else if (retries > 0) {
+              Logger.warn(`Request failed, retrying... (${retries} left)`);
+              await this.sleep(3000);
+            } else {
+              throw err;
+            }
+          }
         }
       }
 
@@ -64,9 +85,17 @@ export class CoinListService {
 
       Logger.success(`Fetched ${this.coins.length} coins successfully`);
       return this.coins;
-    } catch (error) {
-      Logger.error('Failed to fetch coin list from CoinGecko:', error);
-      throw error;
+    } catch (error: any) {
+      Logger.error('Failed to fetch coin list from CoinGecko:', error.message);
+
+      // Fallback: use a basic hardcoded top 100 if API fails
+      if (this.coins.length === 0) {
+        Logger.warn('Using fallback coin list (top 100 major coins)');
+        this.coins = this.getFallbackCoins();
+        globalCache.set(cacheKey, this.coins, CACHE_TTL.coinList);
+      }
+
+      return this.coins;
     }
   }
 
@@ -123,6 +152,31 @@ export class CoinListService {
    */
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
+   * Fallback coin list when API fails (top 100 major coins)
+   */
+  private getFallbackCoins(): Coin[] {
+    const topCoins = [
+      'BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'USDC', 'XRP', 'DOGE', 'ADA', 'TRX',
+      'AVAX', 'SHIB', 'DOT', 'LINK', 'MATIC', 'UNI', 'LTC', 'BCH', 'XLM', 'ATOM',
+      'ETC', 'XMR', 'APT', 'OKB', 'FIL', 'ARB', 'OP', 'NEAR', 'VET', 'ALGO',
+      'ICP', 'HBAR', 'GRT', 'SAND', 'MANA', 'AAVE', 'QNT', 'AXS', 'EOS', 'FTM',
+      'MKR', 'SNX', 'RUNE', 'THETA', 'XTZ', 'FLOW', 'CHZ', 'ZEC', 'EGLD', 'KLAY',
+      'CAKE', 'NEO', 'MINA', 'GALA', 'FTT', 'CRV', 'LDO', 'BLUR', 'IMX', 'RPL',
+      'DYDX', 'GMX', 'COMP', 'ENJ', 'BAT', 'ZIL', 'DASH', 'WAVES', 'IOTX', 'KSM',
+      'HNT', 'ONE', 'AR', 'CELO', 'LRC', 'STX', 'HOT', 'ANKR', 'YFI', 'KAVA',
+      'GMT', 'APE', 'CFX', 'ROSE', 'CHR', 'GAL', 'MASK', 'SUI', 'SEI', 'WLD',
+      'INJ', 'TIA', 'FET', 'AGIX', 'RNDR', 'PEPE', 'WOO', 'MAGIC', 'PENDLE', 'JTO'
+    ];
+
+    return topCoins.map((symbol, index) => ({
+      symbol,
+      name: symbol,
+      marketCap: 1000000000 * (100 - index), // Fake market cap
+      rank: index + 1,
+    }));
   }
 }
 
