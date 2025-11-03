@@ -7,12 +7,14 @@ An intelligent cryptocurrency arbitrage bot that uses volume-based scanning to d
 - **Smart Volume Scanning**: Monitors top 1300 coins by market cap and identifies volume spikes
 - **Hot List Management**: Dynamically tracks 20-50 coins showing high trading activity
 - **Multi-Exchange Support**: Scans 20 major CEXs (Binance, Bybit, OKX, Gate.io, etc.)
+- **Exchange Status Monitoring**: Auto-detects suspended deposits/withdrawals on 8 major exchanges
 - **DEX Integration**: Monitors low-gas chains (BSC, Polygon, Arbitrum, Optimism, Base, etc.)
 - **Comprehensive Fee Calculation**: Accounts for trading fees, withdrawal fees, and gas costs
 - **Simple & Triangular Arbitrage**: Detects both simple (A→B) and triangular (A→B→C→A) opportunities
-- **Real-time Notifications**: Telegram alerts + console logging
+- **Real-time Notifications**: Telegram alerts + console logging (only tradeable opportunities)
 - **Historical Learning**: Tracks coins that frequently have arbitrage opportunities
 - **Efficient Caching**: Minimizes API calls to stay within free tier limits
+- **Retry Logic**: Handles rate limits automatically with exponential backoff
 
 ## Architecture
 
@@ -157,15 +159,33 @@ BSC, Polygon, Arbitrum, Optimism, Base, Avalanche, Fantom, Ethereum
 4. Get your chat ID from [@userinfobot](https://t.me/userinfobot)
 5. Add both to `.env` file
 
+## Exchange Status Monitoring
+
+The bot automatically monitors **8 major exchanges** for suspended deposits/withdrawals:
+- Binance
+- Bybit
+- OKX
+- Gate.io
+- KuCoin
+- HTX (Huobi)
+- MEXC
+- Bitget
+
+Checks every **5 minutes** and excludes suspended tokens from arbitrage notifications.
+
 ## Example Output
 
 ```
 [2025-01-04 12:00:00] 🤖 Initializing Arbitrage Bot...
 [2025-01-04 12:00:01] ✅ Loaded 1300 coins
 [2025-01-04 12:00:02] 🚀 Starting Arbitrage Bot...
-[2025-01-04 12:00:03] 📊 Volume scans scheduled every 300 seconds
-[2025-01-04 12:00:03] 💰 Arbitrage scans scheduled every 30 seconds
-[2025-01-04 12:00:03] 🎯 Bot is now actively monitoring for opportunities!
+[2025-01-04 12:00:03] ℹ️  Exchange status monitoring started (checks every 5 minutes)
+[2025-01-04 12:00:05] ⚠️  binance: 12 tokens suspended - LUNA, UST, FTT...
+[2025-01-04 12:00:06] ⚠️  bybit: 8 tokens suspended - LUNA, FTT...
+[2025-01-04 12:00:07] ✅ Exchange status updated. Total suspended tokens: 35
+[2025-01-04 12:00:08] 📊 Volume scans scheduled every 300 seconds
+[2025-01-04 12:00:08] 💰 Arbitrage scans scheduled every 30 seconds
+[2025-01-04 12:00:08] 🎯 Bot is now actively monitoring for opportunities!
 
 ============================================================
 💰 ARBITRAGE OPPORTUNITY
