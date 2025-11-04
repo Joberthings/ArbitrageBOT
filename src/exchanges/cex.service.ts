@@ -2,11 +2,11 @@ import ccxt from 'ccxt';
 import { Price, CEXTicker, ExchangeInfo } from '../types';
 import { globalCache } from '../utils/cache';
 import { Logger } from '../utils/logger';
-import { SUPPORTED_CEX, CACHE_TTL, DEFAULT_FEES } from '../config/config';
+import { MONITORED_CEX, CACHE_TTL, DEFAULT_FEES } from '../config/config';
 
 /**
  * Centralized Exchange (CEX) service using CCXT
- * Manages connections to 20 major exchanges
+ * Only manages exchanges with status monitoring APIs (11 exchanges)
  */
 export class CEXService {
   private exchanges: Map<string, any> = new Map();
@@ -17,12 +17,12 @@ export class CEXService {
   }
 
   /**
-   * Initialize all supported exchanges
+   * Initialize only monitored exchanges (with status APIs)
    */
   private initializeExchanges(): void {
-    Logger.info('Initializing CEX exchanges...');
+    Logger.info('Initializing monitored CEX exchanges...');
 
-    for (const exchangeId of SUPPORTED_CEX) {
+    for (const exchangeId of MONITORED_CEX) {
       try {
         const ExchangeClass = (ccxt as any)[exchangeId];
 

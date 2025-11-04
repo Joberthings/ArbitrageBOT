@@ -1,13 +1,13 @@
 # Crypto Arbitrage Bot
 
-An intelligent cryptocurrency arbitrage bot that uses volume-based scanning to detect profitable trading opportunities across 20+ centralized exchanges and multiple DEX chains.
+An intelligent cryptocurrency arbitrage bot that uses volume-based scanning to detect profitable trading opportunities across 11 monitored centralized exchanges and multiple DEX chains.
 
 ## Features
 
 - **Smart Volume Scanning**: Monitors top 1300 coins by market cap and identifies volume spikes
 - **Hot List Management**: Dynamically tracks 20-50 coins showing high trading activity
-- **Multi-Exchange Support**: Scans 20 major CEXs (Binance, Bybit, OKX, Gate.io, etc.)
-- **Exchange Status Monitoring**: Auto-detects suspended deposits/withdrawals on 11 major exchanges
+- **Multi-Exchange Support**: Scans 11 major CEXs with status monitoring APIs
+- **Exchange Status Monitoring**: Auto-detects suspended deposits/withdrawals on all 11 exchanges
 - **DEX Integration**: Monitors low-gas chains (BSC, Polygon, Arbitrum, Optimism, Base, etc.)
 - **Comprehensive Fee Calculation**: Accounts for trading fees, withdrawal fees, and gas costs
 - **Simple & Triangular Arbitrage**: Detects both simple (A→B) and triangular (A→B→C→A) opportunities
@@ -131,8 +131,10 @@ Coins auto-remove after 30 minutes of inactivity.
 
 ### 4. Supported Exchanges
 
-**CEXs (20):**
-Binance, Bybit, OKX, Gate.io, KuCoin, HTX, Crypto.com, BingX, Kraken, Bitget, MEXC, Bitfinex, Coinbase, Gemini, Bitstamp, Phemex, BitMart, LBank, AscendEX, Poloniex
+**Monitored CEXs (11):**
+Binance, Bybit, OKX, Gate.io, KuCoin, HTX, MEXC, Bitget, Kraken, Poloniex, BingX
+
+*Note: Only exchanges with public status monitoring APIs are included. This ensures all arbitrage opportunities are actually tradeable (no suspended deposits/withdrawals).*
 
 **DEX Chains (8):**
 BSC, Polygon, Arbitrum, Optimism, Base, Avalanche, Fantom, Ethereum

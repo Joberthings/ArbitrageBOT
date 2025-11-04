@@ -21,19 +21,24 @@ export const config: Config = {
   },
 };
 
-// Supported CEX exchanges (20 major global exchanges)
-export const SUPPORTED_CEX = [
+// CEX exchanges with status monitoring APIs (11 exchanges)
+export const MONITORED_CEX = [
   'binance',
   'bybit',
   'okx',
   'gateio',
   'kucoin',
   'htx',
-  'crypto.com',
-  'bingx',
-  'kraken',
-  'bitget',
   'mexc',
+  'bitget',
+  'kraken',
+  'poloniex',
+  'bingx',
+] as const;
+
+// CEX exchanges without public status APIs (excluded from arbitrage)
+export const UNMONITORED_CEX = [
+  'crypto.com',
   'bitfinex',
   'coinbase',
   'gemini',
@@ -42,10 +47,16 @@ export const SUPPORTED_CEX = [
   'bitmart',
   'lbank',
   'ascendex',
-  'poloniex',
+] as const;
+
+// All supported CEX exchanges (for reference only, use MONITORED_CEX for actual trading)
+export const SUPPORTED_CEX = [
+  ...MONITORED_CEX,
+  ...UNMONITORED_CEX,
 ] as const;
 
 export type SupportedCEX = typeof SUPPORTED_CEX[number];
+export type MonitoredCEX = typeof MONITORED_CEX[number];
 
 // Supported DEX chains (low gas fee priority)
 export const SUPPORTED_CHAINS = [
