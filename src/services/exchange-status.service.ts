@@ -459,15 +459,21 @@ export class ExchangeStatusService {
         timeout: 10000,
       });
 
-      if (response.data) {
-        for (const [symbol, info] of Object.entries(response.data)) {
-          const coinInfo = info as any;
+      // Response is an array of objects with nested currency data
+      if (Array.isArray(response.data)) {
+        for (const item of response.data) {
+          // Each item is an object with the currency symbol as the key
+          for (const [symbol, coinInfo] of Object.entries(item)) {
+            const info = coinInfo as any;
 
-          // Check if deposit or withdrawal is disabled
-          if (coinInfo.disabled === 1 ||
-              coinInfo.frozen === 1 ||
-              coinInfo.delisted === 1) {
-            suspended.add(symbol.toUpperCase());
+            // Check if trading, deposit, or withdrawal is disabled
+            if (info.delisted === true ||
+                info.tradingState !== 'NORMAL' ||
+                info.walletState === 'DISABLED' ||
+                info.walletDepositState === 'DISABLED' ||
+                info.walletWithdrawalState === 'DISABLED') {
+              suspended.add(symbol.toUpperCase());
+            }
           }
         }
       }
