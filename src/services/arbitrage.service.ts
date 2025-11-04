@@ -41,6 +41,12 @@ export class ArbitrageService {
     // Send notifications for profitable opportunities
     for (const opportunity of opportunities) {
       if (opportunity.netProfitPercentage >= config.arbitrageThreshold) {
+        // Skip unconfirmed opportunities if config requires confirmation
+        if (config.onlyNotifyConfirmed && !opportunity.orderBookConfirmed) {
+          Logger.debug(`Skipping unconfirmed opportunity: ${opportunity.symbol}`);
+          continue;
+        }
+
         await notificationService.sendArbitrageAlert(opportunity);
         hotListService.recordArbitrage(opportunity.symbol, opportunity.netProfitPercentage);
       }
@@ -134,6 +140,27 @@ export class ArbitrageService {
       return null;
     }
 
+    // Verify with order book (real-time confirmation) if enabled
+    let orderBookVerification: {
+      confirmed: boolean;
+      buyExchangeBid?: number;
+      buyExchangeAsk?: number;
+      sellExchangeBid?: number;
+      sellExchangeAsk?: number;
+    } = {
+      confirmed: false,
+    };
+
+    if (config.orderBookVerification) {
+      orderBookVerification = await this.verifyWithOrderBook(
+        symbol,
+        buyExchange,
+        sellExchange,
+        buyPrice,
+        sellPrice
+      );
+    }
+
     return {
       symbol,
       type: 'simple',
@@ -149,7 +176,73 @@ export class ArbitrageService {
       netProfitPercentage,
       timestamp: Date.now(),
       tradeAmount: TRADE_AMOUNT_USD,
+      orderBookConfirmed: orderBookVerification.confirmed,
+      buyExchangeBid: orderBookVerification.buyExchangeBid,
+      buyExchangeAsk: orderBookVerification.buyExchangeAsk,
+      sellExchangeBid: orderBookVerification.sellExchangeBid,
+      sellExchangeAsk: orderBookVerification.sellExchangeAsk,
     };
+  }
+
+  /**
+   * Verify arbitrage opportunity with real-time order book
+   */
+  private async verifyWithOrderBook(
+    symbol: string,
+    buyExchange: string,
+    sellExchange: string,
+    buyPrice: number,
+    sellPrice: number
+  ): Promise<{
+    confirmed: boolean;
+    buyExchangeBid?: number;
+    buyExchangeAsk?: number;
+    sellExchangeBid?: number;
+    sellExchangeAsk?: number;
+  }> {
+    try {
+      // Fetch order books from both exchanges
+      const [buyOrderBook, sellOrderBook] = await Promise.all([
+        cexService.fetchOrderBook(buyExchange, symbol),
+        cexService.fetchOrderBook(sellExchange, symbol),
+      ]);
+
+      // Get best bid/ask from both exchanges
+      const buyBidAsk = cexService.getBestBidAsk(buyOrderBook);
+      const sellBidAsk = cexService.getBestBidAsk(sellOrderBook);
+
+      if (!buyBidAsk || !sellBidAsk) {
+        Logger.debug(`Order book verification failed for ${symbol}: missing data`);
+        return { confirmed: false };
+      }
+
+      // Verify:
+      // - Buy exchange: we buy at ASK price (must be <= our buy price)
+      // - Sell exchange: we sell at BID price (must be >= our sell price)
+      const buyExchangeAskValid = buyBidAsk.ask <= buyPrice * 1.001; // 0.1% tolerance
+      const sellExchangeBidValid = sellBidAsk.bid >= sellPrice * 0.999; // 0.1% tolerance
+
+      const confirmed = buyExchangeAskValid && sellExchangeBidValid;
+
+      if (!confirmed) {
+        Logger.debug(
+          `Order book verification failed for ${symbol}: ` +
+          `Buy ask ${buyBidAsk.ask} vs price ${buyPrice}, ` +
+          `Sell bid ${sellBidAsk.bid} vs price ${sellPrice}`
+        );
+      }
+
+      return {
+        confirmed,
+        buyExchangeBid: buyBidAsk.bid,
+        buyExchangeAsk: buyBidAsk.ask,
+        sellExchangeBid: sellBidAsk.bid,
+        sellExchangeAsk: sellBidAsk.ask,
+      };
+    } catch (error) {
+      Logger.debug(`Order book verification error for ${symbol}`);
+      return { confirmed: false };
+    }
   }
 
   /**

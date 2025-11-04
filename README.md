@@ -8,6 +8,7 @@ An intelligent cryptocurrency arbitrage bot that uses volume-based scanning to d
 - **Hot List Management**: Dynamically tracks 20-50 coins showing high trading activity
 - **Multi-Exchange Support**: Scans 10 major CEXs with status monitoring APIs
 - **Exchange Status Monitoring**: Auto-detects suspended deposits/withdrawals on all 10 exchanges
+- **Order Book Verification**: Real-time confirmation via order book to prevent false positives
 - **DEX Integration**: Monitors low-gas chains (BSC, Polygon, Arbitrum, Optimism, Base, etc.)
 - **Comprehensive Fee Calculation**: Accounts for trading fees, withdrawal fees, and gas costs
 - **Simple & Triangular Arbitrage**: Detects both simple (A→B) and triangular (A→B→C→A) opportunities
@@ -146,6 +147,8 @@ BSC, Polygon, Arbitrum, Optimism, Base, Avalanche, Fantom, Ethereum
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ARBITRAGE_THRESHOLD` | 3 | Minimum profit % to trigger notification |
+| `ORDER_BOOK_VERIFICATION` | true | Enable real-time order book verification |
+| `ONLY_NOTIFY_CONFIRMED` | false | Only send notifications for order book confirmed opportunities |
 | `VOLUME_SPIKE_THRESHOLD` | 3 | Volume spike multiplier (3x = 3x normal volume) |
 | `MIN_ABSOLUTE_VOLUME` | 500000 | Minimum $500k volume to consider |
 | `HOT_LIST_SIZE` | 50 | Maximum coins in hot list |
@@ -177,6 +180,27 @@ The bot automatically monitors **10 major exchanges** for suspended deposits/wit
 
 Checks every **5 minutes** and excludes suspended tokens from arbitrage notifications.
 
+## Order Book Verification
+
+The bot verifies arbitrage opportunities in real-time using order books to prevent false positives from stale price data:
+
+**How it works:**
+1. When an arbitrage opportunity is detected, the bot fetches the order book from both exchanges
+2. **Buy Exchange**: Verifies that the best ask (sell order) is ≤ the detected buy price
+3. **Sell Exchange**: Verifies that the best bid (buy order) is ≥ the detected sell price
+4. Opportunities are marked as ✅ **CONFIRMED** or ⚠️ **UNCONFIRMED**
+
+**Example:**
+- Buy price on Exchange A = $1.00
+- Sell price on Exchange B = $1.03 (+3%)
+- **Verification:**
+  - Exchange A best ask must be ≤ $1.00 (you can actually buy at this price)
+  - Exchange B best bid must be ≥ $1.03 (you can actually sell at this price)
+
+**Configuration:**
+- `ORDER_BOOK_VERIFICATION=true` - Enable verification (recommended)
+- `ONLY_NOTIFY_CONFIRMED=true` - Only notify confirmed opportunities (stricter filtering)
+
 ## Example Output
 
 ```
@@ -196,6 +220,7 @@ Checks every **5 minutes** and excludes suspended tokens from arbitrage notifica
 
 💱 Type: SIMPLE
 Symbol: BTC/USDT
+✅ Order Book: CONFIRMED
 
 📍 Buy: binance @ $43,250.50
 📍 Sell: bybit @ $43,450.75
@@ -211,6 +236,10 @@ Symbol: BTC/USDT
 
 ✅ NET PROFIT: $195.05 (3.90%)
 💼 Trade Amount: $100
+
+📖 Order Book Details:
+  • binance Ask: $43,250.50 (Buy Price)
+  • bybit Bid: $43,450.75 (Sell Price)
 ============================================================
 ```
 

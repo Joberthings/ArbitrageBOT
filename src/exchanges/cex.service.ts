@@ -1,5 +1,5 @@
 import ccxt from 'ccxt';
-import { Price, CEXTicker, ExchangeInfo } from '../types';
+import { Price, CEXTicker, ExchangeInfo, OrderBook } from '../types';
 import { globalCache } from '../utils/cache';
 import { Logger } from '../utils/logger';
 import { MONITORED_CEX, CACHE_TTL, DEFAULT_FEES } from '../config/config';
@@ -262,6 +262,60 @@ export class CEXService {
     } catch (error) {
       return false;
     }
+  }
+
+  /**
+   * Fetch order book for real-time verification
+   */
+  async fetchOrderBook(exchangeId: string, symbol: string, limit: number = 5): Promise<OrderBook | null> {
+    const cacheKey = `orderbook:${exchangeId}:${symbol}`;
+    const cached = globalCache.get<OrderBook>(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const exchange = this.exchanges.get(exchangeId);
+    if (!exchange) {
+      Logger.debug(`Exchange ${exchangeId} not available for order book`);
+      return null;
+    }
+
+    try {
+      // Load markets if not already loaded
+      if (!exchange.markets) {
+        await exchange.loadMarkets();
+      }
+
+      const orderBook = await exchange.fetchOrderBook(symbol, limit);
+
+      const formattedOrderBook: OrderBook = {
+        bids: orderBook.bids || [],
+        asks: orderBook.asks || [],
+        timestamp: Date.now(),
+      };
+
+      // Cache for 5 seconds (very short TTL for real-time data)
+      globalCache.set(cacheKey, formattedOrderBook, 5000);
+      return formattedOrderBook;
+    } catch (error) {
+      Logger.debug(`Failed to fetch order book for ${symbol} from ${exchangeId}`);
+      return null;
+    }
+  }
+
+  /**
+   * Get best bid and ask from order book
+   */
+  getBestBidAsk(orderBook: OrderBook | null): { bid: number; ask: number } | null {
+    if (!orderBook || orderBook.bids.length === 0 || orderBook.asks.length === 0) {
+      return null;
+    }
+
+    return {
+      bid: orderBook.bids[0][0], // Best bid (highest buy price)
+      ask: orderBook.asks[0][0], // Best ask (lowest sell price)
+    };
   }
 }
 

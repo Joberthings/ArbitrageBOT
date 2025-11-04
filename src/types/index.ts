@@ -2,6 +2,8 @@
 
 export interface Config {
   arbitrageThreshold: number;
+  orderBookVerification: boolean;
+  onlyNotifyConfirmed: boolean;
   volumeSpikeThreshold: number;
   minAbsoluteVolume: number;
   hotListSize: number;
@@ -61,6 +63,17 @@ export interface ArbitrageOpportunity {
   timestamp: number;
   tradeAmount: number;
   path?: string[]; // For triangular arbitrage
+  orderBookConfirmed?: boolean; // Order book verification
+  buyExchangeBid?: number; // Best bid on buy exchange
+  buyExchangeAsk?: number; // Best ask on buy exchange
+  sellExchangeBid?: number; // Best bid on sell exchange
+  sellExchangeAsk?: number; // Best ask on sell exchange
+}
+
+export interface OrderBook {
+  bids: [number, number][]; // [price, amount]
+  asks: [number, number][]; // [price, amount]
+  timestamp: number;
 }
 
 export interface FeeBreakdown {

@@ -88,10 +88,13 @@ Current Volume: $${this.formatNumber(currentVolume)}
    */
   private formatArbitrageMessage(opp: ArbitrageOpportunity): string {
     const emoji = opp.type === 'triangular' ? '🔺' : '💱';
+    const confirmEmoji = opp.orderBookConfirmed ? '✅' : '⚠️';
+    const confirmText = opp.orderBookConfirmed ? 'CONFIRMED' : 'UNCONFIRMED';
 
     let message = `
 ${emoji} Type: ${opp.type.toUpperCase()}
 Symbol: ${opp.symbol}
+${confirmEmoji} Order Book: ${confirmText}
 
 📍 Buy: ${opp.buyExchange} @ $${opp.buyPrice.toFixed(6)}
 📍 Sell: ${opp.sellExchange} @ $${opp.sellPrice.toFixed(6)}
@@ -108,6 +111,13 @@ Symbol: ${opp.symbol}
 ✅ NET PROFIT: $${opp.netProfit.toFixed(2)} (${opp.netProfitPercentage.toFixed(2)}%)
 💼 Trade Amount: $${opp.tradeAmount}
     `.trim();
+
+    // Add order book details if available
+    if (opp.buyExchangeAsk !== undefined && opp.sellExchangeBid !== undefined) {
+      message += `\n\n📖 Order Book Details:`;
+      message += `\n  • ${opp.buyExchange} Ask: $${opp.buyExchangeAsk.toFixed(6)} (Buy Price)`;
+      message += `\n  • ${opp.sellExchange} Bid: $${opp.sellExchangeBid.toFixed(6)} (Sell Price)`;
+    }
 
     if (opp.path && opp.type === 'triangular') {
       message += `\n\n🔺 Path: ${opp.path.join(' → ')}`;
