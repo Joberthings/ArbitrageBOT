@@ -3,7 +3,6 @@
 export interface Config {
   arbitrageThreshold: number;
   orderBookVerification: boolean;
-  onlyNotifyConfirmed: boolean;
   volumeSpikeThreshold: number;
   minAbsoluteVolume: number;
   hotListSize: number;

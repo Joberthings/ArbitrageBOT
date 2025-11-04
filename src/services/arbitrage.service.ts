@@ -41,8 +41,8 @@ export class ArbitrageService {
     // Send notifications for profitable opportunities
     for (const opportunity of opportunities) {
       if (opportunity.netProfitPercentage >= config.arbitrageThreshold) {
-        // Skip unconfirmed opportunities if config requires confirmation
-        if (config.onlyNotifyConfirmed && !opportunity.orderBookConfirmed) {
+        // Skip unconfirmed opportunities (order book verification failed)
+        if (!opportunity.orderBookConfirmed) {
           Logger.debug(`Skipping unconfirmed opportunity: ${opportunity.symbol}`);
           continue;
         }

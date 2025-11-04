@@ -7,7 +7,6 @@ export const config: Config = {
   // Arbitrage settings
   arbitrageThreshold: parseFloat(process.env.ARBITRAGE_THRESHOLD || '3'),
   orderBookVerification: process.env.ORDER_BOOK_VERIFICATION !== 'false', // Enabled by default
-  onlyNotifyConfirmed: process.env.ONLY_NOTIFY_CONFIRMED === 'true', // Disabled by default
 
   // Volume scanning settings
   volumeSpikeThreshold: parseFloat(process.env.VOLUME_SPIKE_THRESHOLD || '3'),

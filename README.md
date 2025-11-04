@@ -147,8 +147,7 @@ BSC, Polygon, Arbitrum, Optimism, Base, Avalanche, Fantom, Ethereum
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ARBITRAGE_THRESHOLD` | 3 | Minimum profit % to trigger notification |
-| `ORDER_BOOK_VERIFICATION` | true | Enable real-time order book verification |
-| `ONLY_NOTIFY_CONFIRMED` | false | Only send notifications for order book confirmed opportunities |
+| `ORDER_BOOK_VERIFICATION` | true | Enable real-time order book verification (unconfirmed ignored) |
 | `VOLUME_SPIKE_THRESHOLD` | 3 | Volume spike multiplier (3x = 3x normal volume) |
 | `MIN_ABSOLUTE_VOLUME` | 500000 | Minimum $500k volume to consider |
 | `HOT_LIST_SIZE` | 50 | Maximum coins in hot list |
@@ -198,8 +197,7 @@ The bot verifies arbitrage opportunities in real-time using order books to preve
   - Exchange B best bid must be ≥ $1.03 (you can actually sell at this price)
 
 **Configuration:**
-- `ORDER_BOOK_VERIFICATION=true` - Enable verification (recommended)
-- `ONLY_NOTIFY_CONFIRMED=true` - Only notify confirmed opportunities (stricter filtering)
+- `ORDER_BOOK_VERIFICATION=true` - Enable verification (recommended). Unconfirmed opportunities are automatically ignored.
 
 ## Example Output
 
